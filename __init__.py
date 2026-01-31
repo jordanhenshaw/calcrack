@@ -14,13 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''
-=====================================================================
-                      DESIGNED BY ALVA THEATERS
-                       FOR THE SOLE PURPOSE OF
-                         MAKING PEOPLE HAPPY
-=====================================================================
-'''
 
 bl_info = {
     "name": "BlendFinals",
