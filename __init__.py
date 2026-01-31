@@ -1,5 +1,5 @@
-# This file is part of Alva Sorcerer.
-# Copyright (C) 2025 Alva Theaters
+# This file is part of Calcrack.
+# Copyright (C) 2026 Jordan Henshaw
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,14 +16,13 @@
 
 
 bl_info = {
-    "name": "BlendFinals",
-    "author": "Alva Theaters",
-    "location": "TextEditor",
+    "name": "Calcrack",
+    "author": "Jordan Henshaw",
+    "location": "View3D",
     "version": (1, 1, 0),
-    "blender": (4, 1, 0),
-    "description": "Record manual tests to run automatically later.",
-    "tracker_url": "https://sorcerer.alvatheaters.com/support",
-    "category": "Development",
+    "blender": (4, 4, 1),
+    "description": "Crack-thump acoustic analysis.",
+    "category": "Science",
 }
 
 import bpy

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Alva Theaters
+# SPDX-FileCopyrightText: 2026 Jordan Henshaw
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 # pyright: reportInvalidTypeForm=false
@@ -6,7 +6,6 @@
 import bpy
 from bpy.types import PropertyGroup
 import difflib
-import time
 
 from .blendfinals.rainbow import *
 from .command_rewriter import BlenderCommandRewriter
