@@ -5,109 +5,83 @@
 
 import bpy
 from bpy.utils import register_class, unregister_class
-from bpy.types import Panel, UIList
+from bpy.types import Panel
+
+RIFLE_TYPE = 'SINGLE_ARROW'
+MIC_TYPE = 'PLAIN_AXES'
 
 
-class BLENDFINALS_PT_tests(Panel):
-    '''Manual Test Recorder'''
-    bl_space_type = 'TEXT_EDITOR'
-    bl_region_type = 'UI'
-    bl_category = 'BlendFinals'
-    bl_label = "Tests"
-
-    @classmethod
-    def poll(cls, context):
-        return hasattr(context, 'scene')
-    
-    def draw(self, context):
-        scene = context.scene.blendfinals
-        layout = self.layout
-        row = layout.row()
-        
-        col0 = row.column()
-        col1 = row.column()
-        col0.template_list(
-            "BLENDFINALS_UL_tests_draw",
-            "",
-            context.scene.blendfinals,
-            "tests",
-            context.scene.blendfinals,
-            "index_tests"
-        )
-        
-        if scene.tests and not scene.is_testing:
-            col1.operator("blendfinals.test_bump", text="", icon="TRIA_UP").direction = -1
-            col1.operator("blendfinals.test_bump", text="", icon="TRIA_DOWN").direction = 1
-            col1.operator("blendfinals.test_save", text="", icon='FILE_TICK')
-            col1.operator("blendfinals.test_run", text="",icon='PLAY')
-            col1.menu("BLENDFINALS_MT_test_context_menu", text="", icon='DOWNARROW_HLT')
-            
-        row = layout.row()
-        row.alert = scene.is_testing
-        row.operator("blendfinals.test_record", text=scene.record_button_label, icon='REC')
-        
-        if scene.tests and not scene.is_testing:
-            layout.separator()
-
-            row = layout.row()
-            row.operator("blendfinals.dump_test_to_text", text="Dump to Text Block", icon='EVENT_LEFT_ARROW')
-
-            row = layout.row()
-            row.operator('blendfinals.test_import_from_text', icon='EVENT_RIGHT_ARROW')
-
-            layout.separator()
-
-            row = layout.row()
-            row.operator("blendfinals.tests_all", text="Run All Checked", icon='CHECKBOX_HLT')
-        
-        else:
-            layout.separator()
-            
-            row = layout.row()
-            row.operator('blendfinals.test_import_from_text', icon='EVENT_RIGHT_ARROW')
-
-
-class BLENDFINALS_PT_record_selection(Panel):
-    '''Record Object Selection(s)'''
+class CALCRACK_PT_main_ui(Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_category = 'BlendFinals'
-    bl_label = "Record Selection(s)"
+    bl_category = 'Calcrack'
+    bl_label = "Calcrack Settings"
 
     @classmethod
     def poll(cls, context):
-        return hasattr(context, 'scene')
+        return (
+            hasattr(context, 'scene') and
+            hasattr(context, 'active_object') and
+            context.active_object
+        )
     
     def draw(self, context):
-        layout = self.layout
-        row = layout.row()
-        row.prop(context.scene.blendfinals, 'record_active', text="Toggle to Record Active", icon='RESTRICT_SELECT_OFF')
+        ao = context.active_object
+
+        object_type = find_object_type(ao)
+
+        if object_type == RIFLE_TYPE:
+            draw_rifle_ui(self, ao)
+        elif object_type == MIC_TYPE:
+            draw_mic_ui(self, ao)
+        else:
+            return
+        
+        self.layout.separator()
+        row = self.layout.row()
+        row.operator('calcrack.all_rifles_fire')
 
 
-class BLENDFINALS_UL_tests_draw(UIList):
-    bl_idname = "BLENDFINALS_UL_tests_draw"
+def find_object_type(ao):
+    if ao.type != 'EMPTY':
+        return
+    elif ao.empty_display_type == RIFLE_TYPE:
+        return RIFLE_TYPE
+    elif ao.empty_display_type == MIC_TYPE:
+        return MIC_TYPE
     
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        if self.layout_type in {'DEFAULT', 'COMPACT'}:
-            row = layout.row()
-            row.prop(item, 'label', text="", emboss=False)
-            row.prop(item, 'auto', text="", expand=True)
-            
-            
-class BLENDFINALS_MT_test_context_menu(bpy.types.Menu):
-    bl_label = "Test Options"
-    bl_idname = "BLENDFINALS_MT_test_context_menu"
 
-    def draw(self, context):
-        layout = self.layout
-        layout.operator("blendfinals.test_delete", icon='TRASH', text="Delete Selected Test")
+def draw_rifle_ui(self, ao):
+    layout = self.layout
+
+    row = layout.row()
+    row.label(text="Rifle")
+    
+    row = self.layout.row()
+    row.prop(ao, 'ammo_speed', text="Speed (FPS)")
+
+    row = self.layout.row()
+    row.operator('calcrack.rifle_fire')
+
+    row = self.layout.row()
+    row.label(text=f"Accuracy Score: {round(ao.rifle_accuracy, 2)}%")
+
+
+def draw_mic_ui(self, ao):
+    layout = self.layout
+
+    row = layout.row()
+    row.label(text="Microphone")
+    
+    row = self.layout.row()
+    row.prop(ao, 'confidence', text="Confidence")
+
+    row = self.layout.row()
+    row.prop(ao, 'delta_t', text="Delta T")
 
 
 classes = [
-    BLENDFINALS_PT_tests,
-    BLENDFINALS_PT_record_selection,
-    BLENDFINALS_UL_tests_draw,
-    BLENDFINALS_MT_test_context_menu
+    CALCRACK_PT_main_ui,
 ]
 
 

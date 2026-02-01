@@ -30,9 +30,7 @@ import bpy
 from .on_register import (
     assert_directory_name, 
     assert_no_duplicates, 
-    assert_blender_version, 
-    append_blendfinals,
-    load_ui_list
+    assert_blender_version
 )
 
 
@@ -41,13 +39,12 @@ def register():
     assert_directory_name()
     assert_no_duplicates()
     assert_blender_version()
-    append_blendfinals()
     register()
-    bpy.app.timers.register(load_ui_list, first_interval=.01)
-    bpy.app.handlers.load_post.append(load_ui_list)
+    # bpy.app.timers.register(load_ui_list, first_interval=.01)
+    # bpy.app.handlers.load_post.append(load_ui_list)
 
 
 def unregister():
-    bpy.app.handlers.load_post.remove(load_ui_list)
+    # bpy.app.handlers.load_post.remove(load_ui_list)
     from .register_bpy_data import unregister
     unregister()
