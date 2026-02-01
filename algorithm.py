@@ -50,12 +50,12 @@ class Algorithm:
         # Keep endpoint only for debug/visual sanity (not used as a physical limit)
         self.rifle_endpoint = self.get_rifle_endpoint(self.rifle)
 
-        print(f"Velocity (FPS): {self.round_velocity}")
-        print(f"Velocity (m/s): {self.bullet_speed_mps:.3f}")
-        print(f"Mic Data: {self.mic_data}")
-        print(f"Rifle origin (world): {self.rifle_origin_world}")
-        print(f"Rifle direction (unit): {self.rifle_direction_unit}")
-        print(f"Rifle endpoint (display): {self.rifle_endpoint}")
+        # print(f"Velocity (FPS): {self.round_velocity}")
+        # print(f"Velocity (m/s): {self.bullet_speed_mps:.3f}")
+        # print(f"Mic Data: {self.mic_data}")
+        # print(f"Rifle origin (world): {self.rifle_origin_world}")
+        # print(f"Rifle direction (unit): {self.rifle_direction_unit}")
+        # print(f"Rifle endpoint (display): {self.rifle_endpoint}")
 
     def get_all_mic_data(self):
         all_mics = [
@@ -81,12 +81,12 @@ class Algorithm:
     def execute(self):
         predictions = self.predict_mic_delta_ts()
         error = self.compare(predictions)
-        print(predictions)
+        #print(predictions)
         return self.calculate_score(error)
     
     def predict_mic_delta_ts(self):
         """
-        Predict crack–thump delta-t for each microphone given the cached
+        Predict crack-thump delta-t for each microphone given the cached
         rifle origin/direction and bullet speed.
 
         Returns:

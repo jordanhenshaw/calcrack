@@ -35,8 +35,6 @@ class CALCRACK_OT_all_rifles_fire(Operator):
         for rifle in all_rifles:
             accuracy_score = Algorithm(context, rifle).execute()
             rifle.rifle_accuracy = accuracy_score
-        
-        self.report({'INFO'}, f"All rifles fired, check each individual rifle for scores")
         return {'FINISHED'}
     
     
