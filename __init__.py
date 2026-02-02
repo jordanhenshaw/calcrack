@@ -19,7 +19,7 @@ bl_info = {
     "name": "Calcrack",
     "author": "Jordan Henshaw",
     "location": "View3D",
-    "version": (1, 1, 0),
+    "version": (1, 0, 0),
     "blender": (4, 4, 1),
     "description": "Crack-thump acoustic analysis.",
     "category": "Science",
@@ -40,11 +40,8 @@ def register():
     assert_no_duplicates()
     assert_blender_version()
     register()
-    # bpy.app.timers.register(load_ui_list, first_interval=.01)
-    # bpy.app.handlers.load_post.append(load_ui_list)
 
 
 def unregister():
-    # bpy.app.handlers.load_post.remove(load_ui_list)
     from .register_bpy_data import unregister
     unregister()

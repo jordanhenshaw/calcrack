@@ -6,15 +6,15 @@
 import bpy
 from bpy.app.handlers import persistent
 
-# Re-entrancy guard (VERY important for depsgraph handlers)
 _IS_RUNNING = False
 
 
-def fire_all_rifles(scene: bpy.types.Scene):
+def fire_all_rifles(scene):
     bpy.ops.calcrack.all_rifles_fire()
 
+
 @persistent
-def depsgraph_update_handler(scene: bpy.types.Scene, depsgraph: bpy.types.Depsgraph):
+def depsgraph_update_handler(scene, depsgraph):
     global _IS_RUNNING
     if _IS_RUNNING:
         return

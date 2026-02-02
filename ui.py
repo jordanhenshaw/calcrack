@@ -8,7 +8,7 @@ from bpy.utils import register_class, unregister_class
 from bpy.types import Panel
 
 RIFLE_TYPE = 'SINGLE_ARROW'
-MIC_TYPE = 'PLAIN_AXES'
+MIC_TYPE = 'MIC_TYPE'
 
 
 class CALCRACK_PT_main_ui(Panel):
@@ -43,11 +43,11 @@ class CALCRACK_PT_main_ui(Panel):
 
 
 def find_object_type(ao):
-    if ao.type != 'EMPTY':
+    if ao.type not in ['MESH', 'CAMERA']:
         return
-    elif ao.empty_display_type == RIFLE_TYPE:
+    elif ao.type == 'MESH':
         return RIFLE_TYPE
-    elif ao.empty_display_type == MIC_TYPE:
+    elif ao.type == 'CAMERA':
         return MIC_TYPE
     
 
@@ -56,7 +56,21 @@ def draw_rifle_ui(self, ao):
 
     row = layout.row()
     row.label(text="Rifle")
-    
+
+    row = self.layout.row()
+    row.prop(ao, 'name', text="Name")
+
+    layout = self.layout
+    row = layout.row()
+
+    row.prop_search(
+        ao,
+        "aim_target",
+        bpy.data,
+        "objects",
+        text="Target"
+    )
+
     row = self.layout.row()
     row.prop(ao, 'ammo_speed', text="Speed (FPS)")
 
@@ -64,7 +78,7 @@ def draw_rifle_ui(self, ao):
     row.operator('calcrack.rifle_fire')
 
     row = self.layout.row()
-    row.label(text=f"Accuracy Score: {round(ao.rifle_accuracy, 2)}%")
+    row.label(text=f"Error in Seconds: {round(ao.rifle_accuracy, 3)}")
 
 
 def draw_mic_ui(self, ao):
@@ -72,6 +86,9 @@ def draw_mic_ui(self, ao):
 
     row = layout.row()
     row.label(text="Microphone")
+
+    row = self.layout.row()
+    row.prop(ao, 'name', text="Name")
     
     row = self.layout.row()
     row.prop(ao, 'confidence', text="Confidence")

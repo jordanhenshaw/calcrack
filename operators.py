@@ -7,7 +7,7 @@ import bpy
 from bpy.types import Operator
 from bpy.utils import register_class, unregister_class
 
-from .algorithm import Algorithm
+from .algorithm.algorithm import Algorithm
 
 from .ui import RIFLE_TYPE
     

@@ -25,6 +25,7 @@ def register():
     bpy.types.Object.delta_t = FloatProperty(name="Delta T", default=0, min=0, max=100)
 
     bpy.types.Object.ammo_speed = IntProperty(name="Projectile Speed", description="Velocity of round in Feet per Second (FPS)", default=1600, min=SPEED_SOUND_IN_FPS, max=100000)
+    bpy.types.Object.aim_target = PointerProperty(name="Target", type=bpy.types.Object)
     bpy.types.Object.rifle_accuracy = FloatProperty(name="Accuracy", description='''Rifle's accuracy score on 0-100 scale.''', default=0, min=0, max=100)
     for cls in classes:
         register_class(cls)
