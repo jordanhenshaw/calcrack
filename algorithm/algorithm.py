@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import bpy
-from .wrap_delta_t import calculate_crack_thump
+from .wrap import calculate_crack_thump
+from ..maintenance.debug import debug_main
+from .compare import compare
 
-FPS_TO_MPS = 0.3048  # feet/sec -> meters/sec
+FPS_TO_MPS = 0.3048
 
 
 class Algorithm:
@@ -20,55 +21,40 @@ class Algorithm:
 
     Final Output: We add up all the errors in seconds and return that to the user.
     '''
-    def __init__(self, context, ao):
-        self.context = context
+    def __init__(self, scene, ao):
+        self.scene = scene
         self.rifle = ao
 
+        self.temp_f = scene.calcrack.temp_f
         self.round_velocity_fps = self.rifle.ammo_speed
         self.rifle_origin_world = self.rifle.matrix_world.translation.copy()
         self.bullet_speed_mps = float(self.round_velocity_fps) * FPS_TO_MPS
-        self.rifle_endpoint = ao.aim_target.location
+        self.rifle_endpoint = ao.aim_target.matrix_world.translation.copy()
 
-        # print(f"Velocity (FPS): {self.round_velocity}")
-        # print(f"Mic Data: {self.mic_data}")
-        # print(f"Rifle origin (world): {self.rifle_origin_world}")
-        # print(f"Rifle endpoint (display): {self.rifle_endpoint}")
-
-    def get_rifle_endpoint(self, obj):
-        return obj.aim_target.location
+        debug_main(self)
 
 
     def execute(self):
         actual = self.get_all_mic_data()
         predictions = self.predict_mic_delta_ts(actual)
-        return self.compare(actual, predictions)
+        return compare(actual, predictions)
     
     def get_all_mic_data(self):
         all_mics = [
-            obj for obj in bpy.context.scene.objects
+            obj for obj in self.scene.objects
             if obj.type == 'CAMERA' and obj.delta_t != 0.0
         ]
 
         mic_data = {}
         for mic in all_mics:
-            mic_data[mic.name] = (mic.location.copy(), round(mic.delta_t, 3), mic.confidence)
+            mic_position = mic.matrix_world.translation.copy()
+            mic_data[mic.name] = (mic_position, round(mic.delta_t, 3), mic.confidence)
         return mic_data
     
     def predict_mic_delta_ts(self, actual):
         predictions = {}
 
         for mic_name, (mic_position, _, _) in actual.items():
-            predictions[mic_name] = calculate_crack_thump(self.rifle_origin_world, self.rifle_endpoint, self.round_velocity_fps, mic_position)
+            predictions[mic_name] = calculate_crack_thump(self.rifle_origin_world, self.rifle_endpoint, self.round_velocity_fps, mic_position, self.temp_f)
 
         return predictions
-
-    def compare(self, actual, predictions):
-        total_error = 0.0
-
-        for mic_name, (_, actual_dt, _) in actual.items():
-            pred_dt = predictions.get(mic_name)
-            if pred_dt is None:
-                continue
-            total_error += abs(float(pred_dt) - float(actual_dt))
-
-        return round(total_error, 3)

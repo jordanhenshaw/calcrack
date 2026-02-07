@@ -6,11 +6,20 @@
 import bpy
 from bpy.app.handlers import persistent
 
+from .algorithm.algorithm import Algorithm
+
 _IS_RUNNING = False
 
 
 def fire_all_rifles(scene):
-    bpy.ops.calcrack.all_rifles_fire()
+    if not bpy.context.scene.calcrack.live_update:
+        return
+    
+    all_rifles = [obj for obj in bpy.context.scene.objects if obj.type == 'MESH' and obj.aim_target]
+    for rifle in all_rifles:
+        aggregated_error, mean_error = Algorithm(scene, rifle).execute()
+        rifle.aggregated_errors = aggregated_error
+        rifle.mean_error = mean_error
 
 
 @persistent

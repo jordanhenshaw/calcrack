@@ -9,13 +9,13 @@ from bpy.types import Panel
 
 RIFLE_TYPE = 'SINGLE_ARROW'
 MIC_TYPE = 'MIC_TYPE'
+TARGET_TYPE = 'TARGET_TYPE'
 
 
-class CALCRACK_PT_main_ui(Panel):
+class CalcrackBase:
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Calcrack'
-    bl_label = "Calcrack Settings"
 
     @classmethod
     def poll(cls, context):
@@ -24,6 +24,10 @@ class CALCRACK_PT_main_ui(Panel):
             hasattr(context, 'active_object') and
             context.active_object
         )
+
+
+class CALCRACK_PT_object_ui(Panel, CalcrackBase):
+    bl_label = "Object"
     
     def draw(self, context):
         ao = context.active_object
@@ -34,21 +38,36 @@ class CALCRACK_PT_main_ui(Panel):
             draw_rifle_ui(self, ao)
         elif object_type == MIC_TYPE:
             draw_mic_ui(self, ao)
-        else:
-            return
-        
-        self.layout.separator()
+        elif object_type == TARGET_TYPE:
+            draw_target_ui(self, ao)
+
+
+class CALCRACK_PT_settings_ui(Panel, CalcrackBase):
+    bl_label = "Settings"
+    
+    def draw(self, context):
         row = self.layout.row()
-        row.operator('calcrack.all_rifles_fire')
+        row.prop(context.scene.calcrack, 'temp_f')
+
+        row = self.layout.row()
+        row.prop(context.scene.calcrack, 'error_margin')
+
+        row = self.layout.row()
+        row.prop(context.scene.calcrack, 'print_to_terminal')
+
+        row = self.layout.row()
+        row.prop(context.scene.calcrack, 'live_update')
 
 
 def find_object_type(ao):
-    if ao.type not in ['MESH', 'CAMERA']:
+    if ao.type not in ['MESH', 'CAMERA', 'EMPTY']:
         return
     elif ao.type == 'MESH':
         return RIFLE_TYPE
     elif ao.type == 'CAMERA':
         return MIC_TYPE
+    elif ao.type == 'EMPTY':
+        return TARGET_TYPE
     
 
 def draw_rifle_ui(self, ao):
@@ -78,7 +97,10 @@ def draw_rifle_ui(self, ao):
     row.operator('calcrack.rifle_fire')
 
     row = self.layout.row()
-    row.label(text=f"Error in Seconds: {round(ao.rifle_accuracy, 3)}")
+    row.label(text=f"Aggregated Error: {round(ao.aggregated_errors, 3)}s.")
+
+    row = self.layout.row()
+    row.label(text=f"Mean Error: {round(ao.mean_error, 3)}s.")
 
 
 def draw_mic_ui(self, ao):
@@ -97,8 +119,40 @@ def draw_mic_ui(self, ao):
     row.prop(ao, 'delta_t', text="Delta T")
 
 
+def draw_target_ui(self, ao):
+    layout = self.layout
+
+    row = layout.row()
+    row.label(text="Target")
+
+    row = self.layout.row()
+    row.prop(ao, 'name', text="Name")
+
+    for obj in bpy.context.scene.objects:
+        if not hasattr(obj, 'aim_target'):
+            continue
+        if not obj.aim_target:
+            continue
+        if obj.aim_target is not ao:
+            continue
+        
+        box = self.layout.box()
+        row = box.row()
+        row.label(text=f'''Rifle "{obj.name}"''')
+
+        row = box.row()
+        row.prop(obj, 'ammo_speed', text="Speed (FPS)")
+
+        row = box.row()
+        row.label(text=f"Aggregated Error: {round(obj.aggregated_errors, 3)}s.")
+
+        row = box.row()
+        row.label(text=f"Mean Error: {round(obj.mean_error, 3)}s.")
+
+
 classes = [
-    CALCRACK_PT_main_ui,
+    CALCRACK_PT_object_ui,
+    CALCRACK_PT_settings_ui
 ]
 
 
@@ -110,7 +164,3 @@ def register():
 def unregister():
     for cls in reversed(classes):
         unregister_class(cls)
-
-
-if __name__ == '__main__':  # Only for live edit
-    register()

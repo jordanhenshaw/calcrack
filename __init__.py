@@ -27,7 +27,7 @@ bl_info = {
 
 import bpy
 
-from .on_register import (
+from .manager_register import (
     assert_directory_name, 
     assert_no_duplicates, 
     assert_blender_version
@@ -35,7 +35,7 @@ from .on_register import (
 
 
 def register():
-    from .register_bpy_data import register
+    from .manager_register import register
     assert_directory_name()
     assert_no_duplicates()
     assert_blender_version()
@@ -43,5 +43,5 @@ def register():
 
 
 def unregister():
-    from .register_bpy_data import unregister
+    from .manager_register import unregister
     unregister()
