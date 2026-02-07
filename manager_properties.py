@@ -24,6 +24,8 @@ class CALCRACK_PG_scene(PropertyGroup):
         description="Run Blender from CMD (Windows) or Terminal (Mac) to see additional data printouts. WARNING: May cause lag!"
     )
     live_update: BoolProperty(name="Live Update", default=True, description="Automatically fire rifles when scene changes")
+    aggregated_errors: FloatProperty(name="Aggregated Error (Sim)", description="Total aggregated error from microphone C/T set points from simulation")
+    mean_error: FloatProperty(name="Mean Error (Sim)", description="Mean error from microphone C/T set points from simulation")
 
 
 classes = [
@@ -39,6 +41,10 @@ def register():
     bpy.types.Object.aim_target = PointerProperty(name="Target", type=bpy.types.Object)
     bpy.types.Object.aggregated_errors = FloatProperty(default=0, min=0, max=100)
     bpy.types.Object.mean_error = FloatProperty(default=0, min=0, max=100)
+    bpy.types.Object.duration_flight = FloatProperty(name="Flight Duration (s)", default=2, description="Length of simulation needed, in seconds")
+    bpy.types.Object.time_crack = FloatProperty()
+    bpy.types.Object.time_thump = FloatProperty()
+    bpy.types.Object.simulated_error = FloatProperty()
     for cls in classes:
         register_class(cls)
     bpy.types.Scene.calcrack = PointerProperty(type=CALCRACK_PG_scene)
@@ -52,6 +58,10 @@ def unregister():
         unregister_class(cls)
 
     for prop in (
+        "time_crack",
+        "time_thump",
+        "simulated_error,"
+        "duration_flight",
         "mean_error",
         "aggregated_errors",
         "aim_target",

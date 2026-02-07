@@ -53,6 +53,12 @@ class CALCRACK_PT_settings_ui(Panel, CalcrackBase):
         row.prop(context.scene.calcrack, 'error_margin')
 
         row = self.layout.row()
+        row.label(text=f"Aggregated Error (Sim): {round(context.scene.calcrack.aggregated_errors, 3)}")
+
+        row = self.layout.row()
+        row.label(text=f"Mean Error (Sim): {round(context.scene.calcrack.mean_error, 3)}")
+
+        row = self.layout.row()
         row.prop(context.scene.calcrack, 'print_to_terminal')
 
         row = self.layout.row()
@@ -102,6 +108,12 @@ def draw_rifle_ui(self, ao):
     row = self.layout.row()
     row.label(text=f"Mean Error: {round(ao.mean_error, 3)}s.")
 
+    row = self.layout.row()
+    row.operator('calcrack.rifle_simulate')
+
+    row = self.layout.row()
+    row.prop(ao, 'duration_flight')
+
 
 def draw_mic_ui(self, ao):
     layout = self.layout
@@ -117,6 +129,19 @@ def draw_mic_ui(self, ao):
 
     row = self.layout.row()
     row.prop(ao, 'delta_t', text="Delta T")
+
+    row = layout.row()
+    row.label(text="Simulation Set Points")
+
+    row = self.layout.row()
+    row.label(text=f"Crack: {round(ao.time_crack, 3)}; Thump: {round(ao.time_thump, 3)}")
+
+    row = self.layout.row()
+    row.operator('calcrack.crack_set')
+    row.operator('calcrack.thump_set')
+
+    row = self.layout.row()
+    row.label(text=f"Simulation Delta T: {round(ao.time_thump - ao.time_crack, 3)}")
 
 
 def draw_target_ui(self, ao):
