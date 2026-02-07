@@ -6,14 +6,14 @@ import bpy
 from ..maintenance.debug import debug_each
 
 
-def compare(actual, predictions):
+def compare(Algorithm):
         scene = bpy.context.scene # Keep these expensive bpy calls outside loop
         is_printing = scene.calcrack.print_to_terminal
         error_margin = scene.calcrack.error_margin
 
         errors = []
-        for mic_name, (_, actual_dt, _) in actual.items():
-            pred_dt = predictions.get(mic_name)
+        for mic_name, (_, actual_dt, _) in Algorithm.actual.items():
+            pred_dt = Algorithm.predictions.get(mic_name)
             if pred_dt is None:
                 continue
             error = abs(float(pred_dt) - float(actual_dt))

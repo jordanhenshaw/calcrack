@@ -17,10 +17,10 @@ class CALCRACK_OT_rifle_fire(Operator):
 
     def execute(self, context):
         ao = context.active_object
-        aggregated_error, mean_error = Algorithm(context.scene, ao).execute()
-        ao.aggregated_errors = aggregated_error
-        ao.mean_error = mean_error
-        self.report({'INFO'}, f"Aggregated Error: {round(aggregated_error, 3)}s. Mean Error: {round(mean_error, 3)}s.")
+        Result = Algorithm(context.scene, ao).execute()
+        ao.aggregated_errors = Result.aggregated_errors
+        ao.mean_error = Result.mean_error
+        self.report({'INFO'}, f"Aggregated Error: {round(Result.aggregated_errors, 3)}s. Mean Error: {round(Result.mean_error, 3)}s.")
         return {'FINISHED'}
 
     

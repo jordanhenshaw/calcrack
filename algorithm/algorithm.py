@@ -5,6 +5,7 @@
 from .wrap import calculate_crack_thump
 from ..maintenance.debug import debug_main
 from .compare import compare
+from .speed_sound import speed_sound
 
 FPS_TO_MPS = 0.3048
 
@@ -26,6 +27,7 @@ class Algorithm:
         self.rifle = ao
 
         self.temp_f = scene.calcrack.temp_f
+        self.speed_sound_mps = speed_sound(self.temp_f)
         self.round_velocity_fps = self.rifle.ammo_speed
         self.rifle_origin_world = self.rifle.matrix_world.translation.copy()
         self.bullet_speed_mps = float(self.round_velocity_fps) * FPS_TO_MPS
@@ -35,9 +37,10 @@ class Algorithm:
 
 
     def execute(self):
-        actual = self.get_all_mic_data()
-        predictions = self.predict_mic_delta_ts(actual)
-        return compare(actual, predictions)
+        self.get_all_mic_data()
+        self.predict_mic_delta_ts()
+        self.compare_results()
+        return self
     
     def get_all_mic_data(self):
         all_mics = [
@@ -49,12 +52,18 @@ class Algorithm:
         for mic in all_mics:
             mic_position = mic.matrix_world.translation.copy()
             mic_data[mic.name] = (mic_position, round(mic.delta_t, 3), mic.confidence)
-        return mic_data
+
+        self.actual = mic_data
     
-    def predict_mic_delta_ts(self, actual):
+    def predict_mic_delta_ts(self):
         predictions = {}
 
-        for mic_name, (mic_position, _, _) in actual.items():
-            predictions[mic_name] = calculate_crack_thump(self.rifle_origin_world, self.rifle_endpoint, self.round_velocity_fps, mic_position, self.temp_f)
+        for mic_name, (mic_position, _, _) in self.actual.items():
+            predictions[mic_name] = calculate_crack_thump(self, mic_position)
 
-        return predictions
+        self.predictions = predictions
+    
+    def compare_results(self):
+        aggr, mean = compare(self)
+        self.aggregated_errors = aggr
+        self.mean_error = mean

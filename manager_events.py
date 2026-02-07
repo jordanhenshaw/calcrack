@@ -17,9 +17,9 @@ def fire_all_rifles(scene):
     
     all_rifles = [obj for obj in bpy.context.scene.objects if obj.type == 'MESH' and obj.aim_target]
     for rifle in all_rifles:
-        aggregated_error, mean_error = Algorithm(scene, rifle).execute()
-        rifle.aggregated_errors = aggregated_error
-        rifle.mean_error = mean_error
+        Result = Algorithm(scene, rifle).execute()
+        rifle.aggregated_errors = Result.aggregated_errors
+        rifle.mean_error = Result.mean_error
 
 
 @persistent

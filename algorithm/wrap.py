@@ -3,35 +3,24 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from .math import calculate
-from .speed_sound import speed_sound
 
 FPS_TO_MPS = 0.3048
 
 
-def calculate_crack_thump(
-    rifle_origin_world,
-    rifle_endpoint_world,
-    round_velocity_fps,
-    mic_position_world,
-    temp_f,
-    meters_per_bu=1.0,
-):
-    origin = rifle_origin_world
-    endpoint = rifle_endpoint_world
+def calculate_crack_thump(Algorithm, mic_position_world, meters_per_bu=1.0):
+    distance = find_distance(Algorithm)
 
-    d = endpoint - origin
-    if d.length == 0:
-        return 0.0
-    d.normalize()
-
-    v = float(round_velocity_fps) * FPS_TO_MPS
-    c = speed_sound(temp_f)
-
-    R = (mic_position_world - origin) * float(meters_per_bu)
-
-    x = R.dot(d)
-    R_perp = R - d * x
+    R = (mic_position_world - Algorithm.rifle_origin_world) * float(meters_per_bu)
+    x = R.dot(distance)
+    R_perp = R - distance * x
     r = R_perp.length
     R_mag = R.length
 
-    return float(calculate(x, r, R_mag, v, c))
+    return calculate(x, r, R_mag, Algorithm.bullet_speed_mps, Algorithm.speed_sound_mps)
+
+
+def find_distance(Algorithm):
+    rifle = Algorithm.rifle_origin_world
+    target = Algorithm.rifle_endpoint
+    distance = target - rifle
+    return distance.normalized()
