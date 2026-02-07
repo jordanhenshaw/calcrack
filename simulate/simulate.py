@@ -97,11 +97,15 @@ class Simulate:
             radius1=math.tan(mach_angle_rad),
             radius2=0.0,
             depth=BASE_CONE_DEPTH,
-            enter_editmode=False,
+            enter_editmode=True,
             location=origin
         )
+
         self.cone_obj = bpy.context.active_object
         self.cone_obj.name = "Mach_Cone"
+
+        bpy.ops.transform.translate(value=(0, 0, -BASE_CONE_DEPTH / 2.0))
+        bpy.ops.object.mode_set(mode='OBJECT')
 
         bpy.ops.mesh.primitive_uv_sphere_add(
             segments=32,
@@ -126,6 +130,8 @@ class Simulate:
         self.cone_obj.parent = self.bullet_obj
         self.cone_obj.matrix_parent_inverse = self.bullet_obj.matrix_world.inverted()
         self.cone_obj.location = (0.0, 0.0, -BASE_CONE_DEPTH / 2.0)
+        self.cone_obj.rotation_euler = (0.0, 0.0, 0.0)
+        self.cone_obj.scale = (1.0, 1.0, 1.0)
 
     def orient_cone(self):
         self.bullet_obj.rotation_mode = 'XYZ'
