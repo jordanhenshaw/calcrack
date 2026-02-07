@@ -20,9 +20,9 @@ class CALCRACK_OT_rifle_fire(Operator):
         aggregated_error, mean_error = Algorithm(context.scene, ao).execute()
         ao.aggregated_errors = aggregated_error
         ao.mean_error = mean_error
-        self.report({'INFO'}, f"Aggregated Error: {aggregated_error}s. Mean Error: {mean_error}s.")
+        self.report({'INFO'}, f"Aggregated Error: {round(aggregated_error, 3)}s. Mean Error: {round(mean_error, 3)}s.")
         return {'FINISHED'}
-    
+
     
 classes = [
     CALCRACK_OT_rifle_fire,
