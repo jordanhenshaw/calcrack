@@ -52,6 +52,10 @@ class Simulate:
 
 
     def get_mach_angle(self): 
+        c = self.Algorithm.speed_sound_mps
+        v = self.Algorithm.bullet_speed_mps
+        print("c:", c, "v:", v, "c/v:", c/v, "Mach:", v/c)
+
         self.mach_angle = find_mach_angle(self.Algorithm)
 
     def get_cone_orientation(self):
@@ -94,7 +98,7 @@ class Simulate:
 
         bpy.ops.mesh.primitive_cone_add(
             vertices=32,
-            radius1=math.tan(mach_angle_rad),
+            radius1=BASE_CONE_DEPTH * math.tan(mach_angle_rad),
             radius2=0.0,
             depth=BASE_CONE_DEPTH,
             enter_editmode=True,
