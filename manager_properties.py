@@ -23,7 +23,7 @@ class CALCRACK_PG_scene(PropertyGroup):
         default=False,
         description="Run Blender from CMD (Windows) or Terminal (Mac) to see additional data printouts. WARNING: May cause lag!"
     )
-    live_update: BoolProperty(name="Live Update", default=True, description="Automatically fire rifles when scene changes")
+    live_update: BoolProperty(name="Live Update", default=True, description="Automatically fire rifles when scene changes (Calculate Mathematically method)")
     aggregated_errors: FloatProperty(name="Aggregated Error (Sim)", description="Total aggregated error from microphone C/T set points from simulation")
     mean_error: FloatProperty(name="Mean Error (Sim)", description="Mean error from microphone C/T set points from simulation")
 

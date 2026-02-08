@@ -162,7 +162,6 @@ def draw_target_ui(self, ao):
         row.label(text=f'''Rifle "{obj.name}"''')
 
         row = box.row()
-        row.enabled = False
         row.prop(obj, 'ammo_speed', text="Speed (FPS)")
 
         row = box.row()
