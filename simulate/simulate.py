@@ -54,7 +54,6 @@ class Simulate:
     def get_mach_angle(self): 
         c = self.Algorithm.speed_sound_mps
         v = self.Algorithm.bullet_speed_mps
-        print("c:", c, "v:", v, "c/v:", c/v, "Mach:", v/c)
 
         self.mach_angle = find_mach_angle(self.Algorithm)
 
@@ -71,7 +70,7 @@ class Simulate:
         duration_flight = self.Algorithm.rifle.duration_flight  # seconds
         v = self.Algorithm.bullet_speed_mps
 
-        bullet_distance = duration_flight * v  # meters
+        bullet_distance = (duration_flight * v) / 2 # meters
         self.final_cone_scale = bullet_distance
 
     def get_sphere_final_scale(self):
