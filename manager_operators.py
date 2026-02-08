@@ -12,7 +12,7 @@ from .simulate.simulate import Simulate
     
 
 class CALCRACK_OT_rifle_fire(Operator):
-    '''Press to test the accuracy of the current rifle's shooting angle and round's velocity against the actual mircophone's crack-thump delta-t's'''
+    '''Test the accuracy of the current rifle's position and shooting angle candidate using math only'''
     bl_idname = 'calcrack.rifle_fire'
     bl_label = "Fire"
 
@@ -26,7 +26,7 @@ class CALCRACK_OT_rifle_fire(Operator):
     
 
 class CALCRACK_OT_rifle_simulate(Operator):
-    '''Press to test the accuracy of the current rifle's shooting angle with a 3D visual simulation'''
+    '''Test the accuracy of the current rifle's position and shooting angle candidate with a 3D simulation'''
     bl_idname = 'calcrack.rifle_simulate'
     bl_label = "Simulate"
 
@@ -54,7 +54,7 @@ class CALCRACK_OT_crack_set(Operator):
 class CALCRACK_OT_thump_set(Operator):
     '''Press when the simulated bang sphere intersects this microphone's diaphragm'''
     bl_idname = 'calcrack.thump_set'
-    bl_label = "Thump"
+    bl_label = "Set Thump"
 
     def execute(self, context):
         ao = context.active_object

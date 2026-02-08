@@ -14,7 +14,7 @@ SPEED_SOUND_IN_FPS = 1126
 class CALCRACK_PG_scene(PropertyGroup):
     temp_f: IntProperty(name="Temperature (F)", default=72)
     error_margin: FloatProperty(
-        name="Margin for Error (s)", 
+        name="Error Margin (s)", 
         default=.005, 
         description="If calculated error <= this value, it will result in 0.00. Calculated error is rounded to 3 decimal points before evaluating"
     )
@@ -34,14 +34,14 @@ classes = [
 
 
 def register():
-    bpy.types.Object.confidence = IntProperty(name="Confidence", default=3, min=1, max=3)
     bpy.types.Object.delta_t = FloatProperty(name="Delta T", default=0, min=0, max=100)
 
-    bpy.types.Object.ammo_speed = IntProperty(name="Projectile Speed", description="Velocity of round in Feet per Second (FPS)", default=1600, min=SPEED_SOUND_IN_FPS, max=100000)
+    bpy.types.Object.ammo_speed = IntProperty(name="Projectile Speed", description="Velocity of bullet, in Feet per Second (FPS)", default=1600, min=SPEED_SOUND_IN_FPS, max=100000)
+    bpy.types.Object.confidence = IntProperty(name="Confidence", default=3, min=1, max=3)
     bpy.types.Object.aim_target = PointerProperty(name="Target", type=bpy.types.Object)
     bpy.types.Object.aggregated_errors = FloatProperty(default=0, min=0, max=100)
     bpy.types.Object.mean_error = FloatProperty(default=0, min=0, max=100)
-    bpy.types.Object.duration_flight = FloatProperty(name="Flight Duration (s)", default=2, description="Length of simulation needed, in seconds")
+    bpy.types.Object.duration_flight = FloatProperty(name="Simulation Duration (s)", default=2, description="Length of simulation needed, in seconds")
     bpy.types.Object.time_crack = FloatProperty()
     bpy.types.Object.time_thump = FloatProperty()
     bpy.types.Object.simulated_error = FloatProperty()

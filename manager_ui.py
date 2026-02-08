@@ -35,7 +35,7 @@ class CALCRACK_PT_object_ui(Panel, CalcrackBase):
         object_type = find_object_type(ao)
 
         if object_type == RIFLE_TYPE:
-            draw_rifle_ui(self, ao)
+            draw_rifle_ui(self, ao, context.scene)
         elif object_type == MIC_TYPE:
             draw_mic_ui(self, ao)
         elif object_type == TARGET_TYPE:
@@ -46,17 +46,14 @@ class CALCRACK_PT_settings_ui(Panel, CalcrackBase):
     bl_label = "Settings"
     
     def draw(self, context):
+        self.layout.use_property_split = True
+        self.layout.use_property_decorate = False
+
         row = self.layout.row()
         row.prop(context.scene.calcrack, 'temp_f')
 
         row = self.layout.row()
         row.prop(context.scene.calcrack, 'error_margin')
-
-        row = self.layout.row()
-        row.label(text=f"Aggregated Error (Sim): {round(context.scene.calcrack.aggregated_errors, 3)}")
-
-        row = self.layout.row()
-        row.label(text=f"Mean Error (Sim): {round(context.scene.calcrack.mean_error, 3)}")
 
         row = self.layout.row()
         row.prop(context.scene.calcrack, 'print_to_terminal')
@@ -76,14 +73,11 @@ def find_object_type(ao):
         return TARGET_TYPE
     
 
-def draw_rifle_ui(self, ao):
+def draw_rifle_ui(self, ao, scene):
     layout = self.layout
 
-    row = layout.row()
-    row.label(text="Rifle")
-
     row = self.layout.row()
-    row.prop(ao, 'name', text="Name")
+    row.prop(ao, 'name', text="Rifle")
 
     layout = self.layout
     row = layout.row()
@@ -96,62 +90,64 @@ def draw_rifle_ui(self, ao):
         text="Target"
     )
 
-    row = self.layout.row()
+
+    box = self.layout.box()
+    box.label(text="Calculate Mathematically:")
+
+    row = box.row(align=True)
     row.prop(ao, 'ammo_speed', text="Speed (FPS)")
+    row.operator('calcrack.rifle_fire', text="", icon='EVENT_RIGHT_ARROW')
 
-    row = self.layout.row()
-    row.operator('calcrack.rifle_fire')
-
-    row = self.layout.row()
+    row = box.row()
     row.label(text=f"Aggregated Error: {round(ao.aggregated_errors, 3)}s.")
 
-    row = self.layout.row()
+    row = box.row()
     row.label(text=f"Mean Error: {round(ao.mean_error, 3)}s.")
 
-    row = self.layout.row()
-    row.operator('calcrack.rifle_simulate')
 
-    row = self.layout.row()
+    box = self.layout.box()
+    box.label(text="Calculate Visually:")
+
+    row = box.row(align=True)
     row.prop(ao, 'duration_flight')
+    row.operator('calcrack.rifle_simulate', text="", icon='CONE')
+
+    row = box.row()
+    row.label(text=f"Aggregated Error (Sim): {round(scene.calcrack.aggregated_errors, 3)}")
+
+    row = box.row()
+    row.label(text=f"Mean Error (Sim): {round(scene.calcrack.mean_error, 3)}")
 
 
 def draw_mic_ui(self, ao):
     layout = self.layout
 
-    row = layout.row()
-    row.label(text="Microphone")
-
     row = self.layout.row()
-    row.prop(ao, 'name', text="Name")
-    
-    row = self.layout.row()
-    row.prop(ao, 'confidence', text="Confidence")
+    row.prop(ao, 'name', text="Mic")
 
     row = self.layout.row()
     row.prop(ao, 'delta_t', text="Delta T")
 
-    row = layout.row()
-    row.label(text="Simulation Set Points")
+    self.layout.separator()
 
-    row = self.layout.row()
-    row.label(text=f"Crack: {round(ao.time_crack, 3)}; Thump: {round(ao.time_thump, 3)}")
 
-    row = self.layout.row()
+    box = layout.box()
+    box.label(text="Calculate Visually:")
+
+    row = box.row()
     row.operator('calcrack.crack_set')
     row.operator('calcrack.thump_set')
 
-    row = self.layout.row()
-    row.label(text=f"Simulation Delta T: {round(ao.time_thump - ao.time_crack, 3)}")
+    row = box.row()
+    row.label(text=f"Error: {round(abs(round(ao.time_thump - ao.time_crack, 3) - ao.delta_t), 3)}s")
 
 
 def draw_target_ui(self, ao):
-    layout = self.layout
-
-    row = layout.row()
-    row.label(text="Target")
-
     row = self.layout.row()
-    row.prop(ao, 'name', text="Name")
+    row.prop(ao, 'name', text="Target")
+
+    box = self.layout.box()
+    box.label(text="Calculate Mathematically:")
 
     for obj in bpy.context.scene.objects:
         if not hasattr(obj, 'aim_target'):
@@ -160,12 +156,13 @@ def draw_target_ui(self, ao):
             continue
         if obj.aim_target is not ao:
             continue
-        
-        box = self.layout.box()
+
+        box = box.box()
         row = box.row()
         row.label(text=f'''Rifle "{obj.name}"''')
 
         row = box.row()
+        row.enabled = False
         row.prop(obj, 'ammo_speed', text="Speed (FPS)")
 
         row = box.row()
