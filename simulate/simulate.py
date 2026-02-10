@@ -57,18 +57,15 @@ class Simulate:
 
     def get_mach_angle(self):
         self.mach_angle = find_mach_angle(self.Algorithm)
-        print(f"Mach angle: {self.mach_angle}")
 
     def get_cone_orientation(self):
         self.cone_rotation_euler, self.dir_unit = get_cone_orientation(self)
 
     def get_cone_final_scale(self):
         self.final_cone_scale = get_cone_final_scale(self)
-        print(f"Cone scale: {self.final_cone_scale}")
 
     def get_sphere_final_scale(self):
         self.final_sphere_scale = get_sphere_final_scale(self)
-        print(f"Sphere scale: {self.final_sphere_scale}")
 
     def prepare_blender_timeline(self):
         duration_flight = self.Algorithm.rifle.duration_flight
