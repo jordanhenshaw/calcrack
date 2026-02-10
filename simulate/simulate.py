@@ -4,7 +4,11 @@
 
 import bpy
 import math
+
 from .mach_angle import find_mach_angle
+from .orient_cone import get_cone_orientation
+from .scale_cone import get_cone_final_scale
+from .scale_sphere import get_sphere_final_scale
 
 DEG_TO_RAD = 0.0174533
 SECONDS_PER_FRAME = 0.001
@@ -52,32 +56,16 @@ class Simulate:
 
 
     def get_mach_angle(self): 
-        c = self.Algorithm.speed_sound_mps
-        v = self.Algorithm.bullet_speed_mps
-
         self.mach_angle = find_mach_angle(self.Algorithm)
 
     def get_cone_orientation(self):
-        rifle_location = self.Algorithm.rifle_origin_world 
-        target_location = self.Algorithm.rifle_endpoint
-        direction = (target_location - rifle_location)
-        self.dir_unit = direction.normalized()
-
-        quat = self.dir_unit.to_track_quat('Z', 'Y')
-        self.cone_rotation_euler = quat.to_euler()
+        self.cone_rotation_euler = get_cone_orientation(self)
 
     def get_cone_final_scale(self):
-        duration_flight = self.Algorithm.rifle.duration_flight  # seconds
-        v = self.Algorithm.bullet_speed_mps
-
-        bullet_distance = (duration_flight * v) / 2 # meters
-        self.final_cone_scale = bullet_distance
+        self.final_cone_scale = get_cone_final_scale(self)
 
     def get_sphere_final_scale(self):
-        duration_flight = self.Algorithm.rifle.duration_flight  # seconds
-        c = self.Algorithm.speed_sound_mps
-        sound_radius = duration_flight * c
-        self.final_sphere_scale = sound_radius
+        self.final_sphere_scale = get_sphere_final_scale(self)
 
     def prepare_blender_timeline(self):
         duration_flight = self.Algorithm.rifle.duration_flight
@@ -89,7 +77,6 @@ class Simulate:
         self.scene.frame_start = self.start_frame
         self.scene.frame_end = self.end_frame
         self.scene.frame_set(self.start_frame)
-
 
     def create_objects(self):
         origin = self.Algorithm.rifle_origin_world 
@@ -139,7 +126,6 @@ class Simulate:
     def orient_cone(self):
         self.bullet_obj.rotation_mode = 'XYZ'
         self.bullet_obj.rotation_euler = self.cone_rotation_euler
-
 
     def scale_objects_start(self):
         s = START_SCALE
