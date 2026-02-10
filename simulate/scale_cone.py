@@ -4,8 +4,7 @@
 
 
 def get_cone_final_scale(self):
-    duration_flight = self.Algorithm.rifle.duration_flight  # seconds
-    v = self.Algorithm.bullet_speed_mps
-
-    bullet_distance = (duration_flight * v) / 2 # meters
-    return bullet_distance
+    duration_flight_s = self.Algorithm.rifle.duration_flight
+    speed_bullet_mps = self.Algorithm.bullet_speed_mps
+    scale_cone = duration_flight_s * speed_bullet_mps
+    return scale_cone / 2  # Delete trailing half of cone behind muzzle blast.

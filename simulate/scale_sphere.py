@@ -4,7 +4,6 @@
 
 
 def get_sphere_final_scale(self):
-    duration_flight = self.Algorithm.rifle.duration_flight  # seconds
-    c = self.Algorithm.speed_sound_mps
-    sound_radius = duration_flight * c
-    return sound_radius
+    duration_flight_s = self.Algorithm.rifle.duration_flight
+    speed_sound_mps = self.Algorithm.speed_sound_mps
+    return duration_flight_s * speed_sound_mps

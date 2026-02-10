@@ -22,7 +22,7 @@ class Simulate:
     '''
     Context: We want Blender to visualize a mach cone and muzzle blast from a rifle.
 
-    Time Scaling: A viewport frame is too short a time. So we will say 1 Blender frame is .001 ms regardless of fps.
+    Time Scaling: A viewport frame is too short a time. So we will say 1 Blender frame is 1 ms regardless of fps.
 
     Inputs: We receive an Algorithm object which contains the pre-calculated math data for the setup.
 
@@ -55,17 +55,20 @@ class Simulate:
         self.keyframe_bullet_end()
 
 
-    def get_mach_angle(self): 
+    def get_mach_angle(self):
         self.mach_angle = find_mach_angle(self.Algorithm)
+        print(f"Mach angle: {self.mach_angle}")
 
     def get_cone_orientation(self):
-        self.cone_rotation_euler = get_cone_orientation(self)
+        self.cone_rotation_euler, self.dir_unit = get_cone_orientation(self)
 
     def get_cone_final_scale(self):
         self.final_cone_scale = get_cone_final_scale(self)
+        print(f"Cone scale: {self.final_cone_scale}")
 
     def get_sphere_final_scale(self):
         self.final_sphere_scale = get_sphere_final_scale(self)
+        print(f"Sphere scale: {self.final_sphere_scale}")
 
     def prepare_blender_timeline(self):
         duration_flight = self.Algorithm.rifle.duration_flight
