@@ -18,4 +18,4 @@ def debug_main(Algorithm):
 
 def debug_each(mic_name, error, actual_dt, pred_dt):
     # Return early for scene toggle outside loop
-    print(f"{BLUE}Error: {RED}{error:.2f}s{BLUE}. Actual: {RESET}{actual_dt:.2f}s{BLUE}. Predicted: {RESET}{pred_dt:.2f}s{BLUE}.{RESET} ---> {RESET}{mic_name}")
+    print(f"{BLUE}Error: {RED}{error:.2f}s{BLUE}. Actual: {RESET}{actual_dt:.3f}s{BLUE}. Predicted: {RESET}{pred_dt:.3f}s{BLUE}.{RESET} ---> {RESET}{mic_name}")
