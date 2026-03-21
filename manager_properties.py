@@ -15,13 +15,18 @@ class CALCRACK_PG_scene(PropertyGroup):
     temp_f: IntProperty(name="Temperature (F)", default=72)
     error_margin: FloatProperty(
         name="Error Margin (s)", 
-        default=.005, 
+        default=.000, 
         description="If calculated error <= this value, it will result in 0.00. Calculated error is rounded to 3 decimal points before evaluating"
     )
     print_to_terminal: BoolProperty(
         name="Print Results", 
         default=False,
         description="Run Blender from CMD (Windows) or Terminal (Mac) to see additional data printouts. WARNING: May cause lag!"
+    )
+    air_drag: BoolProperty(
+        name="Consider Air Drag", 
+        default=False,
+        description="Use a more accurate and resource-intensive simulation that factors in air drag"
     )
     live_update: BoolProperty(name="Live Update", default=True, description="Automatically fire rifles when scene changes (Calculate Mathematically method)")
     aggregated_errors: FloatProperty(name="Aggregated Error (Sim)", description="Total aggregated error from microphone C/T set points from simulation")
@@ -41,7 +46,7 @@ def register():
     bpy.types.Object.aim_target = PointerProperty(name="Target", type=bpy.types.Object)
     bpy.types.Object.aggregated_errors = FloatProperty(default=0, min=0, max=100)
     bpy.types.Object.mean_error = FloatProperty(default=0, min=0, max=100)
-    bpy.types.Object.duration_flight = FloatProperty(name="Simulation Duration (s)", default=2, description="Length of simulation needed, in seconds")
+    bpy.types.Object.duration_flight = FloatProperty(name="Simulation Duration (s)", default=.5, description="Length of simulation needed, in seconds")
     bpy.types.Object.time_crack = FloatProperty()
     bpy.types.Object.time_thump = FloatProperty()
     bpy.types.Object.simulated_error = FloatProperty()

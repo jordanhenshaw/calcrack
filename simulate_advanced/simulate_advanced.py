@@ -4,28 +4,29 @@
 
 import bpy
 import math
+from mathutils import Vector
 
-from .scale_bullets import get_cone_final_scale
 from .scale_thump import get_sphere_final_scale
+from .air_drag import distance_at_time
 
-DEG_TO_RAD = 0.0174533
 SECONDS_PER_FRAME = 0.001
-BASE_CONE_DEPTH = 2.0
+FRAME_STEP = 5
+DRAG_COEFF = 0.12
 BASE_SPHERE_RADIUS = 1.0
 START_SCALE = 1e-4
 KEYFRAME_INTERPOLATION = 'LINEAR'
 
 
-class Simulate:
+class SimulateAdvanced:
     '''
     Context: We want Blender to visualize a mach cone and muzzle blast from a rifle.
 
     Time Scaling: A viewport frame is too short a time. So we will say 1 Blender frame is 1 ms regardless of fps.
 
-    Inputs: We receive an Algorithm object which contains the pre-calculated math data for the setup.
+    Inputs: We receive an Algorithm object, which contains the pre-calculated math data for the setup.
 
-    Outputs: It just creates a a muzzle blast sphere, an empty representing the bullet, and spheres along the 
-    empty's path representing its sound. The mach cone naturally arises from this setup as the spheres grow at 
+    Outputs: It just creates a muzzle blast sphere, an empty representing the bullet, and spheres along the
+    empty's path representing its sound. The mach cone naturally arises from this setup as the spheres grow at
     the speed of sound.
     '''
     def __init__(self, scene, ao, Algorithm):
@@ -33,6 +34,14 @@ class Simulate:
         self.ao = ao
         self.Algorithm = Algorithm
 
+        self.origin = Vector(self.Algorithm.rifle_origin_world)
+        self.endpoint = Vector(self.Algorithm.rifle_endpoint)
+
+        direction = self.endpoint - self.origin
+        if direction.length == 0.0:
+            raise ValueError("rifle_endpoint is the same as rifle_origin_world")
+
+        self.dir_unit = direction.normalized()
 
     def execute(self):
         self.get_sphere_final_scale()
@@ -50,14 +59,13 @@ class Simulate:
         self.keyframe_bullet_start()
         self.keyframe_bullet_end()
 
-    def get_cone_final_scale(self):
-        self.final_cone_scale = get_cone_final_scale(self)
+        self.process_bullet_frames()
 
     def get_sphere_final_scale(self):
         self.final_sphere_scale = get_sphere_final_scale(self)
 
     def prepare_blender_timeline(self):
-        duration_flight = self.Algorithm.rifle.duration_flight
+        duration_flight = float(self.Algorithm.rifle.duration_flight)
         frames = max(1, int(math.ceil(duration_flight / SECONDS_PER_FRAME)))
 
         self.start_frame = 1
@@ -68,49 +76,34 @@ class Simulate:
         self.scene.frame_set(self.start_frame)
 
     def create_muzzle_blast(self):
-        origin = self.Algorithm.rifle_origin_world 
-        mach_angle_rad = self.mach_angle * DEG_TO_RAD
-
-        bpy.ops.mesh.primitive_cone_add(
-            vertices=32,
-            radius1=BASE_CONE_DEPTH * math.tan(mach_angle_rad),
-            radius2=0.0,
-            depth=BASE_CONE_DEPTH,
-            enter_editmode=True,
-            location=origin
-        )
-
-        self.cone_obj = bpy.context.active_object
-        self.cone_obj.name = "Mach_Cone"
-
-        bpy.ops.transform.translate(value=(0, 0, -BASE_CONE_DEPTH / 2.0))
-        bpy.ops.object.mode_set(mode='OBJECT')
-
         bpy.ops.mesh.primitive_uv_sphere_add(
             segments=32,
             ring_count=16,
             radius=BASE_SPHERE_RADIUS,
             enter_editmode=False,
-            location=origin
+            location=self.origin
         )
         self.sphere_obj = bpy.context.active_object
         self.sphere_obj.name = "Muzzle_Blast"
-
-        self.cone_obj.display_type = 'WIRE'
         self.sphere_obj.display_type = 'WIRE'
 
     def create_bullet(self):
-        origin = self.Algorithm.rifle_origin_world
         self.bullet_obj = bpy.data.objects.new("Bullet_Apex", None)
-        bpy.context.collection.objects.link(self.bullet_obj)
-        self.bullet_obj.location = origin
+        self.scene.collection.objects.link(self.bullet_obj)
+        self.bullet_obj.location = self.origin
 
     def create_frames_dict(self):
-        frames = {} 
-        for i in self.Algorithm.rifle.duration_flight:
-            new_pos = self.time_to_distance(i, self.bullet_obj.location)
-            sphere_final_scale = self.distance_to_scale_final(i, )
-            frames[i] = (new_pos, sphere_final_scale)
+        frames = {}
+
+        for frame in range(self.start_frame + 1, self.end_frame + 1, FRAME_STEP):
+            t_emit = self.frame_to_time(frame)
+            new_pos = self.time_to_position(t_emit)
+
+            remaining_time = self.frame_to_time(self.end_frame) - t_emit
+            sphere_final_scale = self.time_to_scale_final(remaining_time)
+
+            frames[frame] = (new_pos, sphere_final_scale)
+
         self.frames_dict = frames
 
     def scale_blast_start(self):
@@ -123,42 +116,70 @@ class Simulate:
         set_linear(self.sphere_obj)
 
     def process_bullet_frames(self):
-        for i, value in self.frames_dict.items():
-            self.scene.frame_set(i)
-            self.sphere_add()
+        for frame, (location, final_scale) in self.frames_dict.items():
+            self.sphere_add(frame, location, final_scale)
+
+    def sphere_add(self, frame, location, final_scale):
+        bpy.ops.mesh.primitive_uv_sphere_add(
+            segments=24,
+            ring_count=12,
+            radius=BASE_SPHERE_RADIUS,
+            enter_editmode=False,
+            location=location
+        )
+        obj = bpy.context.active_object
+        obj.name = f"Sound_{frame:04d}"
+        obj.display_type = 'WIRE'
+
+        self.scene.frame_set(frame)
+        obj.scale = (START_SCALE, START_SCALE, START_SCALE)
+        obj.keyframe_insert(data_path="scale", frame=frame)
+
+        self.scene.frame_set(self.end_frame)
+        obj.scale = (final_scale, final_scale, final_scale)
+        obj.keyframe_insert(data_path="scale", frame=self.end_frame)
+
+        set_linear(obj)
 
     def scale_objects_end(self):
         self.scene.frame_set(self.end_frame)
-        s = self.final_cone_scale
-        self.cone_obj.scale = (s, s, s)
-
         s = self.final_sphere_scale
         self.sphere_obj.scale = (s, s, s)
 
     def keyframe_objects_end(self):
-        self.cone_obj.keyframe_insert(data_path="scale", frame=self.end_frame)
         self.sphere_obj.keyframe_insert(data_path="scale", frame=self.end_frame)
-
-        set_linear(self.cone_obj)
         set_linear(self.sphere_obj)
 
     def keyframe_bullet_start(self):
-        origin = self.Algorithm.rifle_origin_world
         self.scene.frame_set(self.start_frame)
-        self.bullet_obj.location = origin
+        self.bullet_obj.location = self.origin
         self.bullet_obj.keyframe_insert(data_path="location", frame=self.start_frame)
         set_linear(self.bullet_obj)
 
     def keyframe_bullet_end(self):
-        origin = self.Algorithm.rifle_origin_world
-        duration_flight = self.Algorithm.rifle.duration_flight
-        v = self.Algorithm.bullet_speed_mps
-        bullet_distance = duration_flight * v
-
         self.scene.frame_set(self.end_frame)
-        self.bullet_obj.location = origin + (self.dir_unit * bullet_distance)
+        self.bullet_obj.location = self.time_to_position(
+            float(self.Algorithm.rifle.duration_flight)
+        )
         self.bullet_obj.keyframe_insert(data_path="location", frame=self.end_frame)
         set_linear(self.bullet_obj)
+
+    def frame_to_time(self, frame):
+        return (frame - self.start_frame) * SECONDS_PER_FRAME
+
+    def time_to_distance(self, t_seconds):
+        return distance_at_time(t_seconds, self.Algorithm.bullet_speed_mps)
+
+    def time_to_position(self, t_seconds):
+        return self.origin + (self.dir_unit * self.time_to_distance(t_seconds))
+
+    def time_to_scale_final(self, remaining_time):
+        total_time = float(self.Algorithm.rifle.duration_flight)
+        if total_time <= 0.0:
+            return START_SCALE
+
+        scale = self.final_sphere_scale * (remaining_time / total_time)
+        return max(START_SCALE, scale)
 
 
 def set_linear(obj):

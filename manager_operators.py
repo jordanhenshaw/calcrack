@@ -8,6 +8,7 @@ from bpy.types import Operator
 from bpy.utils import register_class, unregister_class
 
 from .algorithm.algorithm import Algorithm
+from .simulate_advanced.simulate_advanced import SimulateAdvanced
 from .simulate.simulate import Simulate
     
 
@@ -33,7 +34,11 @@ class CALCRACK_OT_rifle_simulate(Operator):
     def execute(self, context):
         ao = context.active_object
         Result = Algorithm(context.scene, ao).execute()
-        Simulate(context.scene, ao, Result).execute()
+
+        if context.scene.calcrack.air_drag:
+            SimulateAdvanced(context.scene, ao, Result).execute()
+        else:
+            Simulate(context.scene, ao, Result).execute()
         self.report({'INFO'}, f"Mach cone and bang simulations added. Press play to begin setting C/T points on each microphone.")
         return {'FINISHED'}
     

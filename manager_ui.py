@@ -108,6 +108,9 @@ def draw_rifle_ui(self, ao, scene):
     box = self.layout.box()
     box.label(text="Calculate Visually:")
 
+    row = box.row()
+    row.prop(scene.calcrack, 'air_drag')
+
     row = box.row(align=True)
     row.prop(ao, 'duration_flight')
     row.operator('calcrack.rifle_simulate', text="", icon='CONE')
